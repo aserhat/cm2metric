@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -31,10 +32,13 @@ func getRepaveMetrics(nodeRepaveMetric *prometheus.GaugeVec) {
 		}
 
 		for _, configmap := range configmaps.Items {
-			log.Println(configmap.GetName(), configmap.Data)
-			for serverName, repaveStatus := range configmap.Data {
-				repaveStatusInt, _ := strconv.ParseFloat(repaveStatus, 64)
-				nodeRepaveMetric.With(prometheus.Labels{"hostname": serverName}).Set(repaveStatusInt)
+			if strings.HasPrefix(configmap.GetName(), "c2m-node-repave-status") {
+				for serverName, repaveStatus := range configmap.Data {
+					repaveStatusInt, _ := strconv.ParseFloat(repaveStatus, 64)
+					nodeRepaveMetric.With(prometheus.Labels{"hostname": serverName}).Set(repaveStatusInt)
+				}
+			} else {
+				log.Println("no metrics to report")
 			}
 		}
 		time.Sleep(15 * time.Second)
@@ -45,8 +49,8 @@ func getRepaveMetrics(nodeRepaveMetric *prometheus.GaugeVec) {
 func main() {
 	nodeRepaveMetric := prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
-			Name: "node_repave_alert",
-			Help: "The total number iof nodes in a cluster",
+			Name: "node_repave_status",
+			Help: "The repave status of a node, represents the phsae of the repave.",
 		},
 		[]string{
 			"hostname",

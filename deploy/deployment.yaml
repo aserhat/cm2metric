@@ -5,17 +5,6 @@ metadata:
   name: cm2metric
 
 ---
-kind: ConfigMap
-apiVersion: v1
-metadata:
-  name: repave-status
-  namespace: cm2metric
-data:
-  node1: "0"
-  node2: "1"
-  node3: "2"
-
----
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
