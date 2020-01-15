@@ -1,0 +1,15 @@
+#!/bin/bash
+
+CGO_ENABLED=0 GOOS=linux go build -a -v -o cm2metric -ldflags="-s -w" .
+
+if [ -z "$1" ]; then
+  REPONAME="registry1.lab-1.cloud.local"
+else
+  REPONAME=$1
+fi
+
+VERSION=$(cat VERSION)
+
+docker build -t $REPONAME/cm2metric:${VERSION} .
+
+docker push $REPONAME/cm2metric:${VERSION}

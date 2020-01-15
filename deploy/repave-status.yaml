@@ -1,0 +1,9 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: repave-status
+  namespace: cm2metric
+data:
+  node1: "0"
+  node2: "1"
+  node3: "1"
