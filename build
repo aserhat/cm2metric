@@ -13,3 +13,5 @@ VERSION=$(cat VERSION)
 docker build -t $REPONAME/cm2metric:${VERSION} .
 
 docker push $REPONAME/cm2metric:${VERSION}
+
+rm cm2metric
