@@ -1,10 +1,14 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -13,6 +17,10 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
+
+type CM2MetricsServer struct {
+	server *http.Server
+}
 
 func getRepaveMetrics(nodeRepaveMetric *prometheus.GaugeVec) {
 	config, err := rest.InClusterConfig()
@@ -56,8 +64,29 @@ func main() {
 			"hostname",
 		},
 	)
+
+	ms := &CM2MetricsServer{
+		server: &http.Server{
+			Addr: ":8081",
+		},
+	}
 	prometheus.MustRegister(nodeRepaveMetric)
-	go getRepaveMetrics(nodeRepaveMetric)
-	http.Handle("/metrics", promhttp.Handler())
-	http.ListenAndServe(":8081", nil)
+
+	mux := http.NewServeMux()
+	mux.Handle("/metrics", promhttp.Handler())
+	ms.server.Handler = mux
+
+	go func() {
+		go getRepaveMetrics(nodeRepaveMetric)
+		if err := ms.server.ListenAndServe(); err != nil {
+			log.Println("Filed to listen and serve webhook server: %v", err)
+		}
+	}()
+
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
+	<-signalChan
+
+	prometheus.Unregister(nodeRepaveMetric)
+	ms.server.Shutdown(context.Background())
 }
