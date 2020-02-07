@@ -1,0 +1,12 @@
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: c2m-node-repave-phase-node2
+  namespace: cm2metric
+  labels:
+    prom_metric: node_repave_phase
+    prom_description: "The_repave_phase"
+    prom_labels: "hostname"
+data:
+  node2: "1"

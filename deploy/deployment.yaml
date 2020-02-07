@@ -54,7 +54,7 @@ spec:
     spec:
       containers:
         - name: cm2metric
-          image: registry1.lab-1.cloud.local/cm2metric:v0.0.6
+          image: registry1.lab-1.cloud.local/cm2metric:v0.1.0
           imagePullPolicy: Always
 
 ---

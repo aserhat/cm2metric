@@ -1,8 +1,0 @@
----
-kind: ConfigMap
-apiVersion: v1
-metadata:
-  name: c2m-node-repave-status-node1
-  namespace: cm2metric
-data:
-  node1: "0"
