@@ -1,0 +1,20 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cm2metric
+  labels:
+    app: cm2metric
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cm2metric
+  template:
+    metadata:
+      labels:
+        app: cm2metric
+    spec:
+      containers:
+      - name: cm2metric
+        image: registry1.lab-1.cloud.local/cm2metric:v0.1.0
