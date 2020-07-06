@@ -17,4 +17,4 @@ spec:
     spec:
       containers:
       - name: cm2metric
-        image: registry1.lab-1.cloud.local/cm2metric:v0.1.0
+        image: docker.pkg.github.com/aserhat/cm2metric/cm2metric:v0.1.0
