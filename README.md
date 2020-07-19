@@ -1,4 +1,4 @@
-# cm2mertics
+# cm2metrics
 
 ## Summary
 A quick proof of concept which allows you to use ConfigMaps to hold metric information.  This app uses SharedInformers to be notified on Add and Update of ConfigMaps to read the ConfigMap and expose the data in it as a metric via a /metrics endpoint.  This could be used in a place for where you want metrics around a process such the stages of a pipeline.  
