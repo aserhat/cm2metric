@@ -1,3 +1,4 @@
+// Package metrics handles updating metrics based on ConfigMap values
 package metrics
 
 import (
