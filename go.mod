@@ -1,6 +1,6 @@
 module github.com/aserhat/cm2metric
 
-go 1.13
+go 1.15
 
 require (
 	github.com/imdario/mergo v0.3.9 // indirect
