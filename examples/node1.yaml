@@ -2,11 +2,11 @@
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: c2m-node-repave-phase-node1
+  name: c2m-node-rebuild-phase-node1
   namespace: default
   labels:
-    prom_metric: node_repave_phase
-    prom_description: "The_repave_phase"
+    prom_metric: node_rebuild_phase
+    prom_description: "The_rebuild_phase"
     prom_labels: "hostname"
 data:
   node1: "1"
