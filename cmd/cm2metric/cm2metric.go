@@ -33,7 +33,6 @@ func main() {
 		log.Panic(err.Error())
 	}
 
-	// Get our informater
 	factory := informers.NewSharedInformerFactory(clientset, 0)
 	informer := factory.Core().V1().ConfigMaps().Informer()
 
