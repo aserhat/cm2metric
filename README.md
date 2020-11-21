@@ -1,5 +1,12 @@
 # cm2metrics
 
+[![](https://github.com/aserhat/cm2metric/workflows/Build/badge.svg)](https://github.com/aserhat/cm2metric/actions)
+[![Go Report Card](https://goreportcard.com/badge/aserhat/cm2metric)](https://goreportcard.com/report/aserhat/cm2metric)
+[![codecov](https://codecov.io/gh/aserhat/cm2metric/branch/main/graph/badge.svg)](https://codecov.io/gh/aserhat/cm2metric)
+[![Releases](https://img.shields.io/github/release-pre/aserhat/cm2metric.svg?sort=semver)](https://github.com/aserhat/cm2metric/releases)
+[![LICENSE](https://img.shields.io/github/license/aserhat/cm2metric.svg)](https://github.com/aserhat/cm2metric/blob/master/LICENSE)
+
+
 An application that use ConfigMaps as the source of metric information, reads them through the use of SharedInformers and exports the data as Prometheus metrics.  The main use of this application is to easily export metrics for processes like automation pipelines that might not easily have a way of doing so. 
 
 ## Sample ConfigMap and Metric
