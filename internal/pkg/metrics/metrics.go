@@ -1,3 +1,4 @@
+// Package metrics handles updating metrics based on ConfigMap values
 package metrics
 
 import (
@@ -13,11 +14,11 @@ import (
 	"k8s.io/client-go/tools/cache"
 )
 
-// MetricsServer exposes a prometheus metrics endpoint
+// Server exposes a prometheus metrics endpoint
 // It uses a SharedInformer to look for ConfigMaps with
 // a specific prefix, it reads the labels and updates
 // the Prometheus endpoint with a metric representing it.
-type MetricsServer struct {
+type Server struct {
 	Server            *http.Server
 	Registeredmetrics map[string]*prometheus.GaugeVec
 	Clientset         *kubernetes.Clientset
@@ -25,18 +26,18 @@ type MetricsServer struct {
 }
 
 const (
-	C2M_NAME_PREFIX = "c2m"
+	c2mNamePrefix = "c2m"
 )
 
-// Returns a new MetricsServer which holds the HTTP Server to
+// NewServer Returns a new Server which holds the HTTP Server to
 // expose the metrics endpoint, a map of registered metrics,
 // clientset to communicate with the API Server and the Informer
 // to listen for ConfigMaps.
-func NewServer() *MetricsServer {
+func NewServer() *Server {
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())
 
-	return &MetricsServer{
+	return &Server{
 		Server: &http.Server{
 			Addr:    ":8081",
 			Handler: mux,
@@ -50,24 +51,18 @@ func NewServer() *MetricsServer {
 // OnAdd checks if a metric is registered based on the ConfigMap
 // labels, if not it createds and registers it and then records it
 // if it does, it just records it.
-func (m *MetricsServer) OnAdd(obj interface{}) {
+func (m *Server) OnAdd(obj interface{}) {
 	configMap := obj.(*corev1.ConfigMap)
-	if strings.HasPrefix(configMap.Name, C2M_NAME_PREFIX) {
+	if strings.HasPrefix(configMap.Name, c2mNamePrefix) {
 		metricname := configMap.ObjectMeta.Labels["prom_metric"]
 		metriclabel := configMap.ObjectMeta.Labels["prom_labels"]
-		if metric, ok := m.Registeredmetrics[metricname]; ok {
-			log.Println("Recording metric: " + metricname)
-			for serverName, repavePhase := range configMap.Data {
-				repavePhaseInt, _ := strconv.ParseFloat(repavePhase, 64)
-				metric.With(prometheus.Labels{metriclabel: serverName}).Set(repavePhaseInt)
-			}
-		} else {
-			log.Println("Recording metric: " + metricname)
-			m.createMetric(configMap.ObjectMeta.Labels)
-			for serverName, repavePhase := range configMap.Data {
-				repavePhaseInt, _ := strconv.ParseFloat(repavePhase, 64)
-				m.Registeredmetrics[metricname].With(prometheus.Labels{metriclabel: serverName}).Set(repavePhaseInt)
-			}
+
+		log.Println("Recording metric: " + metricname)
+		m.createMetric(configMap.ObjectMeta.Labels)
+
+		for serverName, repavePhase := range configMap.Data {
+			repavePhaseInt, _ := strconv.ParseFloat(repavePhase, 64)
+			m.Registeredmetrics[metricname].With(prometheus.Labels{metriclabel: serverName}).Set(repavePhaseInt)
 		}
 	}
 }
@@ -75,29 +70,37 @@ func (m *MetricsServer) OnAdd(obj interface{}) {
 // OnUpdate checks if a metric is registered based on the ConfigMap
 // labels, if not it createds and registers it and then records it
 // if it does, it just records it.
-func (m *MetricsServer) OnUpdate(oldObj, obj interface{}) {
+func (m *Server) OnUpdate(oldObj, obj interface{}) {
 	configMap := obj.(*corev1.ConfigMap)
-	if strings.HasPrefix(configMap.Name, C2M_NAME_PREFIX) {
+	if strings.HasPrefix(configMap.Name, c2mNamePrefix) {
 		metricname := configMap.ObjectMeta.Labels["prom_metric"]
 		metriclabel := configMap.ObjectMeta.Labels["prom_labels"]
-		if metric, ok := m.Registeredmetrics[metricname]; ok {
-			log.Println("Recording metric: " + metricname)
-			for serverName, repavePhase := range configMap.Data {
-				repavePhaseInt, _ := strconv.ParseFloat(repavePhase, 64)
-				metric.With(prometheus.Labels{metriclabel: serverName}).Set(repavePhaseInt)
-			}
-		} else {
-			log.Println("Recording metric: " + metricname)
-			m.createMetric(configMap.ObjectMeta.Labels)
-			for serverName, repavePhase := range configMap.Data {
-				repavePhaseInt, _ := strconv.ParseFloat(repavePhase, 64)
-				m.Registeredmetrics[metricname].With(prometheus.Labels{metriclabel: serverName}).Set(repavePhaseInt)
-			}
+
+		metric := m.Registeredmetrics[metricname]
+		log.Println("Recording metric: " + metricname)
+
+		for serverName, repavePhase := range configMap.Data {
+			repavePhaseInt, _ := strconv.ParseFloat(repavePhase, 64)
+			metric.With(prometheus.Labels{metriclabel: serverName}).Set(repavePhaseInt)
 		}
 	}
 }
 
-func (m *MetricsServer) createMetric(metricdetails map[string]string) {
+// OnDelete checks if a metric is registered based on the ConfigMap
+// labels, if not it createds and registers it and then records it
+// if it does, it just records it.
+func (m *Server) OnDelete(obj interface{}) {
+	configMap := obj.(*corev1.ConfigMap)
+	if strings.HasPrefix(configMap.Name, c2mNamePrefix) {
+		metricname := configMap.ObjectMeta.Labels["prom_metric"]
+
+		metric := m.Registeredmetrics[metricname]
+		prometheus.Unregister(metric)
+		log.Println("Deleting metric: " + metricname)
+	}
+}
+
+func (m *Server) createMetric(metricdetails map[string]string) {
 	log.Println("Creating metric: " + metricdetails["prom_metric"])
 	nodeRepaveMetric := prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
@@ -109,6 +112,7 @@ func (m *MetricsServer) createMetric(metricdetails map[string]string) {
 		},
 	)
 	m.Registeredmetrics[metricdetails["prom_metric"]] = nodeRepaveMetric
+
 	log.Println("Registering metric: " + metricdetails["prom_metric"])
 	prometheus.MustRegister(nodeRepaveMetric)
 }
