@@ -22,10 +22,13 @@ func main() {
 	// Get our clientset
 	kubeconfig := os.Getenv("KUBECONFIG")
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+
 	if err != nil {
 		log.Panic(err.Error())
 	}
+
 	clientset, err := kubernetes.NewForConfig(config)
+
 	if err != nil {
 		log.Panic(err.Error())
 	}
@@ -43,6 +46,7 @@ func main() {
 	c2mserver.Informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    c2mserver.OnAdd,
 		UpdateFunc: c2mserver.OnUpdate,
+		DeleteFunc: c2mserver.OnDelete,
 	})
 
 	// Start and run the metrics server
@@ -59,11 +63,15 @@ func main() {
 
 	// Start the informer
 	go c2mserver.Informer.Run(stopper)
+
 	if !cache.WaitForCacheSync(stopper, c2mserver.Informer.HasSynced) {
-		runtime.HandleError(fmt.Errorf("Timed out waiting for caches to sync"))
+		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
 		return
 	}
+
 	<-stopper
 
-	c2mserver.Server.Shutdown(context.Background())
+	if err2 := c2mserver.Server.Shutdown(context.Background()); err2 != nil {
+		log.Printf("Filed to listen and serve c2mserver server: %v", err2)
+	}
 }
