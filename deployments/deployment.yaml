@@ -57,9 +57,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: cm2metric
+  namespace: cm2metric
   labels:
     app: cm2metric
-    namespace: cm2metric
 spec:
   replicas: 1
   selector:

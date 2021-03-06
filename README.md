@@ -7,12 +7,12 @@
 [![LICENSE](https://img.shields.io/github/license/aserhat/cm2metric.svg)](https://github.com/aserhat/cm2metric/blob/master/LICENSE)
 
 
-An application that use ConfigMaps as the source of metric information, reads them through the use of SharedInformers and exports the data as Prometheus metrics.  The main use of this application is to easily export metrics for processes like automation pipelines that might not easily have a way of doing so. 
+An application that use ConfigMaps as the source of metric information, reads them through the use of SharedInformers and exports the data as Prometheus metrics.  The main use of this application is to easily export metrics for processes like an automation pipelines that might not easily have a way of doing so. 
 
 ## Sample ConfigMap and Metric
-An example here is a pipeline that performas automated server rebuilding.  Through each step of the pipeline the ConfigMap is updated and the value of the data is updated to represent a change in the metric.
+An example here is a pipeline that performs automated server rebuilding.  Through each step of the pipeline the ConfigMap is updated and the value of the data is updated to represent a change in the metric.
 
-When this ConfigMap is create for the first time a metric gets created and registered for node_rebuild_phase, the metric would have a label "hostname", with a value of "node1" and the metric value would be 1.
+When this ConfigMap is created for the first time a metric gets created and registered for node_rebuild_phase, the metric would have a label "hostname", with a value of "node1" and the metric value would be 1.
 ```
 ---
 kind: ConfigMap
